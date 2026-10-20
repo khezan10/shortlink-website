@@ -65,7 +65,7 @@
 
 | # | Tugas terblokir | Yang dibutuhkan | Langkah untuk user | Selesai? |
 |---|-----------------|-----------------|--------------------|----------|
-| — | — | — | — | — |
+| 1 | A3/A8/A16 | Akses jaringan Atlas dari Vercel | Buka cloud.mongodb.com → pilih project → **Network Access** → **Add IP Address** → pilih **Allow Access from Anywhere** (`0.0.0.0/0`) → **Confirm**. Tunggu 1–2 menit, lalu buka https://shortlink-website-psi.vercel.app/api/health | Belum |
 
 ---
 
@@ -99,10 +99,10 @@
 
 | Item | URL | Terverifikasi |
 |------|-----|---------------|
-| Repo shortlink | — | — |
-| Deploy Vercel (`*.vercel.app`) | — | — |
-| Domain produksi | — | — |
-| Landing Zanara | — | — |
+| Repo shortlink | https://github.com/khezan10/shortlink-website | ya |
+| Deploy Vercel (`*.vercel.app`) | https://shortlink-website-psi.vercel.app | ya (HTTP 200) |
+| Domain produksi | — (belum ada domain kustom) | — |
+| Landing Zanara | https://zanara-project.vercel.app | ya |
 
 ---
 
@@ -118,4 +118,62 @@
 > **Next:** ...
 > ```
 
-_(belum ada entri)_
+### [E3] Shortlink fungsional — DOING — 2026-10-20 15:05
+**Dikerjakan:** audit koneksi DB produksi, perbaikan env Vercel, penambahan GET /api/links, daftar link di bawah hero, dan penolakan duplikat URL.
+**Temuan:** MONGODB_URI di Vercel rusak (1224 char) dan NEXT_PUBLIC_BASE_URL menunjuk domain 404; Atlas menolak koneksi dari Vercel (ECONNREFUSED).
+**Bukti:** `/api/health` → 500 `MongoServerSelectionError`; koneksi URI yang sama dari mesin lokal → `CONNECT_OK`; insert duplikat di Atlas → `11000` pada field `url`; halaman produksi memuat "link terbaru".
+**Keputusan:** env Vercel diperbaiki; daftar link + dedupe diimplementasikan.
+**Next:** menunggu allowlist Atlas dari user, lalu uji e2e penuh.
+
+---
+
+## 8. Evaluasi
+
+**Terakhir diperbarui:** 2026-10-20 15:05
+**Skor checklist:** 1/9 lulus · 6 sebagian · 2 terblokir
+
+### 8.1 Tabel Temuan
+
+| ID | Tingkat | Area | Temuan | Bukti (ringkas) | Status | Commit |
+|----|---------|------|--------|-----------------|--------|--------|
+| F-01 | P0 | E3/E9 | `MONGODB_URI` di Vercel berisi nilai rusak (1224 char) sehingga health 500 | `/api/health` → `{ok:false}`, nilai env 1224 char | FIXED | env Vercel (tanpa commit) |
+| F-02 | P0 | E3 | `NEXT_PUBLIC_BASE_URL` menunjuk `shortlink-website.vercel.app` (404), shortUrl akan mati | curl domain → 404; domain asli `shortlink-website-psi.vercel.app` → 200 | FIXED | env Vercel |
+| F-03 | P1 | E3/E6 | `GET /api/links` belum ada; daftar link tidak pernah tampil | `find app -type f` tidak menemukan handler GET daftar | FIXED | 3c62584 |
+| F-04 | P1 | E3 | URL tujuan yang sama bisa dibuat berulang dengan kode berbeda | tidak ada index unik `url`; `findOne({url})` tidak ada | FIXED | 3c62584 |
+| F-05 | P0 | E3/E9 | Atlas menolak koneksi dari Vercel (Network Access) | `MongoServerSelectionError` / `ECONNREFUSED`; URI sama sukses dari mesin lokal | BLOCKED | — |
+| F-06 | P2 | E2 | Health 500 tanpa alasan yang bisa didiagnosis | respons lama hanya `{ok:false}` | FIXED | ac9e659 |
+| F-07 | P2 | E9 | `mzg.my.id` sudah dipakai Zanara; shortlink belum punya domain kustom | curl `https://mzg.my.id` → title "Zanara Project" | BLOCKED | — |
+| F-08 | P1 | E5/E6/E7 | `SECURITY.md`, `dependabot.yml`, `ui-test.yml`/Lighthouse belum ada | `ls` → tidak ditemukan | TODO | — |
+
+### 8.2 Tabel Checklist
+
+| E | Cakupan | Status | Catatan |
+|---|---------|--------|---------|
+| E1 | Kepatuhan proses | Sebagian | CI hijau di `main` (ac9e659), commit Conventional; `progress.md` baru dilengkapi |
+| E2 | Keamanan & secret | Sebagian | Password/URI tidak ada di seluruh riwayat git; `.env.example` placeholder; cron 401 sudah diuji; e2e SSRF belum bisa jalan tanpa DB |
+| E3 | Fungsional shortlink | Terblokir | Halaman 200, health 500 (F-05) |
+| E4 | Aturan link mati | Terblokir | Kode checker sesuai plan; e2e belum bisa dijalankan |
+| E5 | Kualitas kode & tes | Sebagian | CI hijau; `npm audit`/dependabot belum ditambahkan |
+| E6 | UI/UX & a11y | Sebagian | Daftar link + state kosong sudah ada; Playwright/Lighthouse belum |
+| E7 | README & repo | Sebagian | README ada; SECURITY.md belum |
+| E8 | Landing Zanara | Lulus | `https://mzg.my.id` → 200, title "Zanara Project" |
+| E9 | Operasional | Sebagian | Auto-deploy `main` aktif; DB, cron, domain kustom belum terverifikasi |
+
+### 8.3 Penambahan yang Dilakukan
+
+- `GET /api/links` (limit 1–200, urut terbaru) untuk daftar di bawah hero.
+- Index unik `{url:1}` + fallback index biasa bila data lama berduplikat.
+- `POST /api/links` menolak duplikat dengan `409 DUPLICATE_URL` + shortUrl yang sudah ada.
+- Section "link terbaru" di bawah hero: shortlink, URL tujuan, jumlah klik, state kosong.
+- `reason` terklasifikasi di `/api/health` (tanpa membocorkan pesan/secret).
+- Perbaikan env Vercel: `MONGODB_URI` dan `NEXT_PUBLIC_BASE_URL`.
+
+### 8.4 Putaran Evaluasi
+
+- **Putaran 1 (2026-10-20):** E1–E9 diperiksa. F-01–F-04, F-06 diperbaiki dan di-deploy. F-05 (allowlist Atlas) memblokir E3/E4 sehingga e2e, Lighthouse, dan uji duplikat end-to-end belum bisa dijalankan.
+- **Putaran 2:** menunggu F-05 selesai.
+- **Putaran 3:** belum dijalankan.
+
+### 8.5 Saran untuk User (P3)
+
+- `mzg.my.id` saat ini dipakai Zanara. Untuk shortlink, pertimbangkan subdomain seperti `link.mzg.my.id` agar landing Zanara tidak terganggu.
