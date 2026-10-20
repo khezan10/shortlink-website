@@ -22,6 +22,7 @@ export function ensureIndexes(db: Db): Promise<void> {
     global.__mongoIndexesPromise = (async () => {
       await db.collection("links").createIndex({ code: 1 }, { unique: true });
       await db.collection("links").createIndex({ lastCheckedAt: 1 });
+      await db.collection("links").createIndex({ lastClickedAt: 1 });
       try {
         await db.collection("links").createIndex({ url: 1 }, { unique: true });
       } catch {

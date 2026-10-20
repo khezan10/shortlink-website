@@ -17,6 +17,18 @@ export async function GET(req: NextRequest) {
 
   const db = await getDb();
   const col = db.collection<LinkDoc>("links");
+
+  // Retensi: link yang tidak dipakai (tanpa klik) selama N hari dihapus.
+  const inactiveCutoff = new Date(
+    Date.now() - siteConfig.inactivePurgeDays * 86400 * 1000
+  );
+  const purged = await col.deleteMany({
+    $or: [
+      { lastClickedAt: { $lt: inactiveCutoff } },
+      { lastClickedAt: { $exists: false }, createdAt: { $lt: inactiveCutoff } },
+    ],
+  });
+
   const cutoff = new Date(Date.now() - siteConfig.minRecheckHours * 3600 * 1000);
 
   const docs = await col
@@ -64,5 +76,11 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  return NextResponse.json({ checked: docs.length, alive, deleted, inconclusive });
+  return NextResponse.json({
+    checked: docs.length,
+    alive,
+    deleted,
+    inconclusive,
+    purged: purged.deletedCount,
+  });
 }
