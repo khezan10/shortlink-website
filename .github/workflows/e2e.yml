@@ -1,0 +1,26 @@
+name: E2E
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "URL target, mis. https://mzg.my.id"
+        required: true
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx tsx scripts/e2e.ts
+        env:
+          BASE_URL: ${{ inputs.base_url }}
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          MONGODB_DB: ${{ vars.MONGODB_DB || 'shortlink' }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          DEAD_LINK_STRIKES: ${{ vars.DEAD_LINK_STRIKES || '2' }}
+          CREATE_LIMIT_PER_HOUR: ${{ vars.CREATE_LIMIT_PER_HOUR || '10' }}
