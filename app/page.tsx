@@ -25,6 +25,7 @@ export default function Home() {
   const [result, setResult] = useState<Result | null>(null);
   const [copied, setCopied] = useState(false);
   const [links, setLinks] = useState<Array<{code: string; shortUrl: string; url: string; clicks: number; createdAt: Date}>>([]);
+  const [listError, setListError] = useState(false);
   useEffect(() => {
     async function loadLinks() {
       try {
@@ -32,8 +33,10 @@ export default function Home() {
         if (!res.ok) throw new Error("failed");
         const data = await res.json();
         setLinks(data.links || []);
+        setListError(false);
       } catch {
         setLinks([]);
+        setListError(true);
       }
     }
     loadLinks();
@@ -176,7 +179,11 @@ export default function Home() {
             ))}
           </ul>
         ) : (
-          <p className="list-empty">belum ada link yang dibuat_</p>
+          <p className="list-empty">
+            {listError
+              ? "database belum tersambung — coba lagi sebentar"
+              : "belum ada link yang dibuat_"}
+          </p>
         )}
       </section>
     </main>
