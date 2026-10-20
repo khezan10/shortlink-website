@@ -38,9 +38,7 @@ jobs:
       - name: Trigger a fresh production deployment
         if: >
           steps.inspect.outputs.state == 'ERROR' ||
-          steps.inspect.outputs.state == 'CANCELED' ||
-          steps.health.outputs.status == '000' ||
-          steps.health.outputs.status == '500'
+          steps.inspect.outputs.state == 'CANCELED'
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
