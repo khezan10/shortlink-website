@@ -156,6 +156,121 @@ body {
   color: #ff8a8a;
 }
 
+/* ── daftar link terbaru ─────────────────────────────── */
+.links-list {
+  width: 100%;
+  margin-top: 64px;
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+  text-align: left;
+}
+
+.list-title {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 400;
+  letter-spacing: 0.32em;
+  color: var(--lime);
+}
+
+.list-title::before {
+  content: "$ ";
+  color: var(--muted);
+}
+
+.link-grid {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.link-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 12px 14px;
+}
+
+.link-card > * {
+  min-width: 0;
+}
+
+.link-short {
+  flex-shrink: 0;
+  max-width: 45%;
+  font-size: 0.85rem;
+  color: var(--lime);
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.link-short:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.link-url {
+  flex: 1 1 auto;
+  font-size: 0.78rem;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.link-clicks {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 0.7rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.list-empty {
+  margin: 16px 0 0;
+  padding: 22px 16px;
+  border: 1px dashed var(--line);
+  border-radius: 9px;
+  background: rgba(0, 0, 0, 0.35);
+  font-size: 0.82rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+@media (max-width: 520px) {
+  .links-list {
+    margin-top: 48px;
+  }
+
+  .link-card {
+    flex-wrap: wrap;
+    gap: 6px 10px;
+  }
+
+  .link-short {
+    flex-basis: 100%;
+    max-width: 100%;
+    font-size: 0.82rem;
+  }
+
+  .link-url {
+    flex-basis: calc(100% - 76px);
+  }
+
+  .link-clicks {
+    margin-left: auto;
+  }
+}
+
 @keyframes caretBlink {
   0%, 55% { opacity: 1; }
   56%, 100% { opacity: 0; }
