@@ -84,6 +84,7 @@ export default function Home() {
     let displayed = 0;
     let done = false;
     let raf = 0;
+    let hardStop: ReturnType<typeof setTimeout> | undefined;
 
     const minTimer = setTimeout(() => {
       minTime = true;
@@ -108,12 +109,20 @@ export default function Home() {
       done = true;
       clearInterval(wordTimer);
       clearTimeout(minTimer);
+      if (hardStop) clearTimeout(hardStop);
       pctEl.textContent = "100%";
       barEl.style.width = "100%";
       loader.style.transition = "opacity .5s ease";
       loader.style.opacity = "0";
       setTimeout(() => setEntered(true), 480);
     };
+
+    // Jaring pengaman: rAF melambat saat tab tidak aktif, loader tetap harus selesai.
+    hardStop = setTimeout(() => {
+      fontReady = true;
+      minTime = true;
+      finish();
+    }, 2400);
 
     const tick = () => {
       displayed += (target() - displayed) * 0.14;
@@ -132,6 +141,7 @@ export default function Home() {
       cancelAnimationFrame(raf);
       clearInterval(wordTimer);
       clearTimeout(minTimer);
+      if (hardStop) clearTimeout(hardStop);
     };
   }, []);
 
