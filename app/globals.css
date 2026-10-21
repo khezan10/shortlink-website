@@ -273,7 +273,18 @@ body {
     font-size: 0.9rem;
   }
 
-  /* Touch targets: 44px floor for anything a finger has to hit. */
+  .btn,
+  .btn.small {
+    min-height: 48px;
+  }
+
+  .input {
+    min-height: 48px;
+  }
+}
+
+/* Touch range: anything a finger has to hit gets a 44px floor. */
+@media (max-width: 1024px) {
   .toggle {
     display: inline-flex;
     align-items: center;
@@ -285,15 +296,6 @@ body {
     display: flex;
     align-items: center;
     min-height: 44px;
-  }
-
-  .btn,
-  .btn.small {
-    min-height: 48px;
-  }
-
-  .input {
-    min-height: 48px;
   }
 }
 
