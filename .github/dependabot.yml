@@ -1,32 +1,35 @@
 version: 2
 updates:
+  # Minor and patch only. A major bump can change the framework's conventions
+  # or the lint rules, so those are done by hand.
   - package-ecosystem: npm
-    directory: "/"
+    directory: /
     schedule:
       interval: weekly
       day: monday
-      time: "05:00"
+      time: "07:00"
       timezone: Asia/Jakarta
     open-pull-requests-limit: 5
+    labels: [dependencies]
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     groups:
-      npm-minor-patch:
+      minor-and-patch:
+        applies-to: version-updates
         update-types:
           - minor
           - patch
-    ignore:
-      - dependency-name: "*"
-        update-types:
-          - version-update:semver-major
 
   - package-ecosystem: github-actions
-    directory: "/"
+    directory: /
     schedule:
       interval: weekly
-    groups:
-      actions:
-        patterns:
-          - "*"
+      day: monday
+      time: "07:00"
+      timezone: Asia/Jakarta
+    open-pull-requests-limit: 3
+    labels: [dependencies, ci]
     ignore:
       - dependency-name: "*"
-        update-types:
-          - version-update:semver-major
+        update-types: ["version-update:semver-major"]
