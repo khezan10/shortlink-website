@@ -75,7 +75,7 @@ body {
 }
 
 .label {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   letter-spacing: 0.2em;
   color: var(--muted);
 }
@@ -220,10 +220,10 @@ body {
   grid-column: 2;
   grid-row: 1;
   align-self: center;
-  padding: 2px 8px;
+  padding: 3px 9px;
   border: 1px solid var(--line);
   border-radius: 999px;
-  font-size: 0.7rem;
+  font-size: 0.78rem;
   color: var(--muted);
   white-space: nowrap;
 }
@@ -231,7 +231,7 @@ body {
 .link-url {
   grid-column: 1 / -1;
   grid-row: 2;
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   color: var(--muted);
   white-space: nowrap;
   overflow: hidden;
@@ -249,17 +249,71 @@ body {
   text-align: center;
 }
 
-@media (max-width: 520px) {
+/* ── Unified responsive system ──────────────────────────────────────
+   mobile  <= 640px   |   tablet 641..1024px   |   desktop > 1024px
+   Shared with downloadin-ya and tmail-zanara. */
+
+/* Mobile */
+@media (max-width: 640px) {
+  .stage {
+    width: min(560px, calc(100% - 32px));
+    padding: 8vh 0 8vh;
+  }
+
   .links-list {
     margin-top: 48px;
   }
 
   .link-card {
-    padding: 11px 12px;
+    padding: 13px 14px;
+    gap: 4px 12px;
   }
 
   .link-short {
-    font-size: 0.8rem;
+    font-size: 0.9rem;
+  }
+
+  /* Touch targets: 44px floor for anything a finger has to hit. */
+  .toggle {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 8px 0;
+  }
+
+  .link-short {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  .btn,
+  .btn.small {
+    min-height: 48px;
+  }
+
+  .input {
+    min-height: 48px;
+  }
+}
+
+/* Tablet */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .stage {
+    width: min(600px, calc(100% - 64px));
+    padding: 10vh 0 8vh;
+  }
+
+  .title {
+    font-size: clamp(2.4rem, 7vw, 3.4rem);
+  }
+
+  .sub {
+    max-width: 52ch;
+  }
+
+  .link-grid {
+    gap: 12px;
   }
 }
 
