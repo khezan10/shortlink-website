@@ -97,7 +97,12 @@ export async function POST(req: NextRequest) {
   }
 
   // 5) Tolak duplikat URL tujuan — kembalikan shortlink yang sudah ada.
-  const db = await getDb();
+  let db: import("mongodb").Db;
+  try {
+    db = await getDb();
+  } catch {
+    return NextResponse.json({ error: "DB_UNAVAILABLE" }, { status: 503 });
+  }
   const col = db.collection<LinkDoc>("links");
   const existing = await col.findOne({ url }, { projection: { code: 1 } });
   if (existing) {
