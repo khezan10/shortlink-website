@@ -318,7 +318,7 @@ export default function Home() {
             type="text"
             inputMode="url"
             autoComplete="off"
-            placeholder="https://contoh.com/halaman-panjang"
+            placeholder="https://example.com/long-page"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             required
