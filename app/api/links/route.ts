@@ -7,8 +7,17 @@ import { checkRateLimit, clientIp } from "@/lib/ratelimit";
 import { siteConfig } from "@/lib/config";
 import type { LinkDoc } from "@/lib/types";
 
-function shortUrlFor(code: string): string {
-  return `${siteConfig.baseUrl.replace(/\/$/, "")}/${code}`;
+function baseUrlFrom(req: NextRequest): string {
+  const host = req.headers.get("x-forwarded-host") || req.headers.get("host");
+  if (!host) return siteConfig.baseUrl.replace(/\/$/, "");
+  const proto =
+    req.headers.get("x-forwarded-proto") ||
+    (host.startsWith("localhost") || host.startsWith("127.0.0.1") ? "http" : "https");
+  return `${proto}://${host}`;
+}
+
+function shortUrlFor(code: string, req: NextRequest): string {
+  return `${baseUrlFrom(req)}/${code}`;
 }
 
 /** GET /api/links — daftar link terbaru (untuk daftar di bawah hero). */
@@ -27,7 +36,7 @@ export async function GET(req: NextRequest) {
       {
         links: docs.map((d) => ({
           code: d.code,
-          shortUrl: shortUrlFor(d.code),
+          shortUrl: shortUrlFor(d.code, req),
           url: d.url,
           clicks: d.clicks ?? 0,
           createdAt: d.createdAt,
@@ -110,7 +119,7 @@ export async function POST(req: NextRequest) {
       {
         error: "DUPLICATE_URL",
         code: existing.code,
-        shortUrl: shortUrlFor(existing.code),
+        shortUrl: shortUrlFor(existing.code, req),
         url,
       },
       { status: 409 }
@@ -129,8 +138,7 @@ export async function POST(req: NextRequest) {
         failCount: 0,
         clicks: 0,
       });
-      const shortUrl = `${siteConfig.baseUrl.replace(/\/$/, "")}/${code}`;
-      return NextResponse.json({ code, shortUrl, url }, { status: 201 });
+      return NextResponse.json({ code, shortUrl: shortUrlFor(code, req), url }, { status: 201 });
     } catch (e: unknown) {
       const err = e as { code?: number; keyPattern?: Record<string, unknown> };
       if (err?.code === 11000) {
@@ -142,7 +150,7 @@ export async function POST(req: NextRequest) {
           const dup = await col2.findOne({ url }, { projection: { code: 1 } });
           if (dup) {
             return NextResponse.json(
-              { error: "DUPLICATE_URL", code: dup.code, shortUrl: shortUrlFor(dup.code), url },
+              { error: "DUPLICATE_URL", code: dup.code, shortUrl: shortUrlFor(dup.code, req), url },
               { status: 409 }
             );
           }
