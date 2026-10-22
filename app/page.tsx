@@ -7,25 +7,25 @@ type Result =
   | { ok: false; error: string };
 
 const ERROR_ID: Record<string, string> = {
-  INVALID_URL: "Link tidak valid. Awali dengan https:// ya.",
-  INVALID_ALIAS: "Alias 3–32 karakter (huruf, angka, - _).",
-  ALIAS_TAKEN: "Alias sudah dipakai, coba yang lain.",
-  TARGET_UNREACHABLE: "Link tujuan tidak bisa diakses, periksa lagi.",
-  CHECK_INCONCLUSIVE: "Pengecekan belum meyakinkan, coba lagi sebentar.",
-  RATE_LIMITED: "Kebanyakan membuat link. Coba lagi nanti.",
-  DUPLICATE_URL: "Link tujuan ini sudah pernah dibuat. Shortlink yang ada ditampilkan di bawah.",
-  DB_UNAVAILABLE: "Database belum siap. Coba lagi sebentar.",
+  INVALID_URL: "Invalid link. Start it with https://",
+  INVALID_ALIAS: "Alias must be 3–32 characters (letters, numbers, - _).",
+  ALIAS_TAKEN: "That alias is taken, try another one.",
+  TARGET_UNREACHABLE: "The destination is unreachable, please check it.",
+  CHECK_INCONCLUSIVE: "The check was inconclusive, try again shortly.",
+  RATE_LIMITED: "Too many links created. Try again later.",
+  DUPLICATE_URL: "This destination already exists. Its short link is listed below.",
+  DB_UNAVAILABLE: "Database is not ready. Try again shortly.",
 };
 
 const TITLE = "MZG.MY.ID";
 
 const SUB_LINES = [
-  "Tempel link panjang, dapat link pendek. Link tujuan yang mati dihapus otomatis.",
-  "Satu link untuk satu tujuan. Duplikat ditolak, link nganggur 7 hari dibersihkan.",
-  "Tanpa akun, tanpa biaya, tanpa iklan. Cukup tempel lalu pendekkan.",
+  "Paste a long link, get a short one. Dead destinations are removed automatically.",
+  "One link per destination. Duplicates are rejected, idle links are purged after 7 days.",
+  "No account, no cost, no ads. Just paste and shorten.",
 ];
 
-const BOOT_WORDS = ["booting mzg", "memuat font", "menyiapkan form", "siap"];
+const BOOT_WORDS = ["booting mzg", "loading fonts", "preparing form", "ready"];
 
 export default function Home() {
   const [url, setUrl] = useState("");
@@ -288,7 +288,7 @@ export default function Home() {
       )}
 
       <main className="stage">
-        <p className="eyebrow">▓▒░ pemendek link gratis</p>
+        <p className="eyebrow">▓▒░ free link shortener</p>
         <h1 className="title" ref={titleRef} aria-label="MZG.MY.ID">
           {Array.from(TITLE).map((ch, i) => (
             <span key={i} className={ch === "." ? "ch dot" : "ch"} aria-hidden="true">
@@ -298,7 +298,7 @@ export default function Home() {
           <span className="ch caret" aria-hidden="true">_</span>
         </h1>
         <p className="sub" ref={subRef}>
-          Tempel link panjang, dapat link pendek. Link tujuan yang mati dihapus otomatis.
+          Paste a long link, get a short one. Dead destinations are removed automatically.
           <span className="type-caret" aria-hidden="true">▌</span>
         </p>
 
@@ -310,7 +310,7 @@ export default function Home() {
           }}
         >
           <label className="label" htmlFor="url">
-            link tujuan
+            destination url
           </label>
           <input
             id="url"
@@ -328,26 +328,26 @@ export default function Home() {
             className="toggle"
             onClick={() => setShowAlias((v) => !v)}
           >
-            {showAlias ? "− sembunyikan alias" : "+ alias sendiri (opsional)"}
+            {showAlias ? "− hide alias" : "+ custom alias (optional)"}
           </button>
           {showAlias && (
             <>
               <label className="label" htmlFor="alias">
-                alias (3–32 karakter)
+                alias (3–32 characters)
               </label>
               <input
                 id="alias"
                 className="input"
                 type="text"
                 autoComplete="off"
-                placeholder="promo-ramadhan"
+                placeholder="ramadan-promo"
                 value={alias}
                 onChange={(e) => setAlias(e.target.value)}
               />
             </>
           )}
           <button type="submit" className="btn" disabled={loading || !url.trim()}>
-            {loading ? "mengecek link…" : "> pendekkan"}
+            {loading ? "checking link…" : "> shorten"}
           </button>
         </form>
 
@@ -362,25 +362,25 @@ export default function Home() {
               {result.shortUrl}
             </a>
             <button type="button" className="btn small" onClick={copy}>
-              {copied ? "tersalin ✓" : "salin"}
+              {copied ? "copied ✓" : "copy"}
             </button>
           </div>
         )}
         {result && !result.ok && (
           <p className="error" role="alert">
-            {ERROR_ID[result.error] || "Terjadi kesalahan, coba lagi."}
+            {ERROR_ID[result.error] || "Something went wrong, try again."}
           </p>
         )}
 
         {/* Daftar link terbaru di bawah hero */}
         <section
           className="links-list reveal"
-          aria-label="Daftar link terbaru"
+          aria-label="Latest links"
           ref={(el) => {
             revealRefs.current[1] = el;
           }}
         >
-          <h2 className="list-title">link terbaru</h2>
+          <h2 className="list-title">latest links</h2>
           {links.length > 0 ? (
             <ul className="link-grid">
               {links.map((l, i) => (
@@ -395,15 +395,15 @@ export default function Home() {
                   <span className="link-url" title={l.url}>
                     {l.url.length > 60 ? l.url.slice(0, 57) + "..." : l.url}
                   </span>
-                  <span className="link-clicks">{l.clicks} klik</span>
+                  <span className="link-clicks">{l.clicks} clicks</span>
                 </li>
               ))}
             </ul>
           ) : (
             <p className="list-empty">
               {listError
-                ? "database belum tersambung — coba lagi sebentar"
-                : "belum ada link yang dibuat_"}
+                ? "database not connected — try again shortly"
+                : "no links yet_"}
             </p>
           )}
         </section>

@@ -15,13 +15,13 @@ const mono = Space_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "mzg.my.id — Pemendek Link Gratis",
+  title: "mzg.my.id — Free Link Shortener",
   description:
-    "Pendekkan link gratis di mzg.my.id. Link tujuan yang mati dihapus otomatis.",
+    "Shorten links for free at mzg.my.id. Dead destinations are removed automatically.",
   openGraph: {
-    title: "mzg.my.id — Pemendek Link Gratis",
+    title: "mzg.my.id — Free Link Shortener",
     description:
-      "Pendekkan link gratis. Link tujuan yang mati dihapus otomatis.",
+      "Shorten links for free. Dead destinations are removed automatically.",
     type: "website",
   },
 };
@@ -32,7 +32,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="id" className={`${display.variable} ${mono.variable} h-full`}>
+    <html lang="en" className={`${display.variable} ${mono.variable} h-full`}>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
