@@ -5,6 +5,8 @@ A small, self-hosted link shortener with a terminal-flavoured UI, duplicate prot
 Live: **[link.mzg.my.id](https://link.mzg.my.id)** · mirror: [shortlink-website-psi.vercel.app](https://shortlink-website-psi.vercel.app)
 
 [![CI](https://github.com/khezan10/shortlink-website/actions/workflows/ci.yml/badge.svg)](https://github.com/khezan10/shortlink-website/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/khezan10/shortlink-website.svg)](https://github.com/khezan10/shortlink-website/releases/latest)
+[![License: MIT](https://img.shields.io/badge/License-MIT-b4ff2b.svg)](LICENSE)
 
 ---
 
@@ -113,6 +115,30 @@ npx tsc --noEmit # type check
 - The `url` unique index is created on first use. If legacy duplicates exist, the index falls back to a non-unique one so the app keeps working; clean the duplicates, then restart to regain enforcement.
 - Rate-limit documents expire through a Mongo TTL index, so the collection stays small.
 - The health endpoint never leaks the connection string or driver messages — only a classified reason.
+
+## Checks
+
+```bash
+npm run check      # lint + typecheck + unit tests + production build
+```
+
+`npm run lint`, `npm run typecheck` and `npm test` also run on their own. CI
+runs exactly the same command on Node 20 and Node 22.
+
+The E2E run against production is a separate, manual step:
+
+```bash
+npm run e2e
+```
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Security
+
+Report a vulnerability privately — see [SECURITY.md](SECURITY.md).
+
 
 ## License
 

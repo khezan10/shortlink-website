@@ -1,0 +1,30 @@
+name: Bug report
+description: Something does not work the way it should
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting it. The most useful reports include what you did,
+        what you expected, and the exact error text.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What did you see, and what did you expect instead?
+    validations:
+      required: true
+
+  - type: input
+    id: error
+    attributes:
+      label: Error message
+      description: The exact text of any error, if one was shown.
+      placeholder: "Upstream returned HTTP 429"
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything else
+      description: Browser, device, or anything else that might matter.
