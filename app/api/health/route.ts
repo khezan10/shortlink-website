@@ -8,8 +8,14 @@ export async function GET() {
     return NextResponse.json({ ok: true });
   } catch (e) {
     const err = e as Error;
-    // Log ke Vercel (tidak memuat URI/password), balas nama error saja.
+    const msg = (err.message || "").toLowerCase();
+    let reason = err.name;
+    if (msg.includes("whitelist")) reason = "IP_NOT_WHITELISTED";
+    else if (msg.includes("bad auth") || msg.includes("authentication failed")) reason = "AUTH_FAILED";
+    else if (msg.includes("timed out") || msg.includes("etimedout")) reason = "CONNECT_TIMEOUT";
+    else if (msg.includes("getaddrinfo") || msg.includes("enotfound")) reason = "DNS_FAILED";
+    // Log lengkap hanya ke Vercel, tidak pernah ke response publik.
     console.error("[health] db error:", err.name, "-", err.message);
-    return NextResponse.json({ ok: false, reason: err.name }, { status: 500 });
+    return NextResponse.json({ ok: false, reason }, { status: 500 });
   }
 }
