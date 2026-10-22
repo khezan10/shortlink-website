@@ -65,7 +65,7 @@
 
 | # | Tugas terblokir | Yang dibutuhkan | Langkah untuk user | Selesai? |
 |---|-----------------|-----------------|--------------------|----------|
-| 1 | A3/A8/A16 | Akses jaringan Atlas dari Vercel | Buka cloud.mongodb.com → pilih project → **Network Access** → **Add IP Address** → pilih **Allow Access from Anywhere** (`0.0.0.0/0`) → **Confirm**. Tunggu 1–2 menit, lalu buka https://shortlink-website-psi.vercel.app/api/health | Belum |
+| 1 | A3/A8/A16 | Akses jaringan Atlas dari Vercel | Buka cloud.mongodb.com → pilih project → **Network Access** → **Add IP Address** → pilih **Allow Access from Anywhere** (`0.0.0.0/0`) → **Confirm**. Tunggu 1–2 menit, lalu buka https://shortlink-website-psi.vercel.app/api/health | Ya (2026-10-20) |
 
 ---
 
@@ -118,6 +118,13 @@
 > **Next:** ...
 > ```
 
+### [E3] Shortlink fungsional + restyle daftar link — DONE — 2026-10-20 16:55
+**Dikerjakan:** mengganti `MONGODB_URI` Vercel dengan kredensial Atlas yang valid, menambah CSS daftar "link terbaru" yang sebelumnya belum ada, dan mengatur jarak hero → daftar.
+**Temuan:** setelah allowlist aktif error berubah `ECONNREFUSED` → `AUTH_FAILED`, artinya jaringan sudah tembus tetapi password di env Vercel masih yang lama; kartu link juga tampil tanpa border/padding karena kelas `.links-list`/`.link-card` belum didefinisikan.
+**Bukti:** `/api/health` → 200 `{"ok":true}`; `POST /api/links` → 201 `5hHBzdE`; POST ulang → 409 `DUPLICATE_URL` + shortUrl lama; `GET /api/links` → 2 entri; CSS produksi memuat `.links-list`, `.link-card`, `.link-clicks`, `.list-empty`.
+**Keputusan:** kartu dua baris (shortlink + badge klik, lalu URL asli terpotong elipsis) agar domain panjang tidak memenggal kata; jarak hero→daftar 64px desktop / 48px mobile dengan garis pemisah.
+**Next:** E4 (uji checker link mati) dan E5/E7 (SECURITY.md, dependabot, ui-test).
+
 ### [E3] Shortlink fungsional — DOING — 2026-10-20 15:05
 **Dikerjakan:** audit koneksi DB produksi, perbaikan env Vercel, penambahan GET /api/links, daftar link di bawah hero, dan penolakan duplikat URL.
 **Temuan:** MONGODB_URI di Vercel rusak (1224 char) dan NEXT_PUBLIC_BASE_URL menunjuk domain 404; Atlas menolak koneksi dari Vercel (ECONNREFUSED).
@@ -130,7 +137,7 @@
 ## 8. Evaluasi
 
 **Terakhir diperbarui:** 2026-10-20 15:05
-**Skor checklist:** 1/9 lulus · 6 sebagian · 2 terblokir
+**Skor checklist:** 2/9 lulus · 5 sebagian · 2 terblokir
 
 ### 8.1 Tabel Temuan
 
@@ -140,7 +147,7 @@
 | F-02 | P0 | E3 | `NEXT_PUBLIC_BASE_URL` menunjuk `shortlink-website.vercel.app` (404), shortUrl akan mati | curl domain → 404; domain asli `shortlink-website-psi.vercel.app` → 200 | FIXED | env Vercel |
 | F-03 | P1 | E3/E6 | `GET /api/links` belum ada; daftar link tidak pernah tampil | `find app -type f` tidak menemukan handler GET daftar | FIXED | 3c62584 |
 | F-04 | P1 | E3 | URL tujuan yang sama bisa dibuat berulang dengan kode berbeda | tidak ada index unik `url`; `findOne({url})` tidak ada | FIXED | 3c62584 |
-| F-05 | P0 | E3/E9 | Atlas menolak koneksi dari Vercel (Network Access) | `MongoServerSelectionError` / `ECONNREFUSED`; URI sama sukses dari mesin lokal | BLOCKED | — |
+| F-05 | P0 | E3/E9 | Atlas menolak koneksi dari Vercel (Network Access) + `MONGODB_URI` memakai password lama | health `ECONNREFUSED`, lalu `AUTH_FAILED` setelah allowlist | FIXED | env Vercel + 9809a66 |
 | F-06 | P2 | E2 | Health 500 tanpa alasan yang bisa didiagnosis | respons lama hanya `{ok:false}` | FIXED | ac9e659 |
 | F-07 | P2 | E9 | `mzg.my.id` sudah dipakai Zanara; shortlink belum punya domain kustom | curl `https://mzg.my.id` → title "Zanara Project" | BLOCKED | — |
 | F-08 | P1 | E5/E6/E7 | `SECURITY.md`, `dependabot.yml`, `ui-test.yml`/Lighthouse belum ada | `ls` → tidak ditemukan | TODO | — |
@@ -151,7 +158,7 @@
 |---|---------|--------|---------|
 | E1 | Kepatuhan proses | Sebagian | CI hijau di `main` (ac9e659), commit Conventional; `progress.md` baru dilengkapi |
 | E2 | Keamanan & secret | Sebagian | Password/URI tidak ada di seluruh riwayat git; `.env.example` placeholder; cron 401 sudah diuji; e2e SSRF belum bisa jalan tanpa DB |
-| E3 | Fungsional shortlink | Terblokir | Halaman 200, health 500 (F-05) |
+| E3 | Fungsional shortlink | Lulus | health `ok:true`; POST 201, duplikat 409 `DUPLICATE_URL`, GET menampilkan 2 link |
 | E4 | Aturan link mati | Terblokir | Kode checker sesuai plan; e2e belum bisa dijalankan |
 | E5 | Kualitas kode & tes | Sebagian | CI hijau; `npm audit`/dependabot belum ditambahkan |
 | E6 | UI/UX & a11y | Sebagian | Daftar link + state kosong sudah ada; Playwright/Lighthouse belum |

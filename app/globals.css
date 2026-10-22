@@ -188,27 +188,27 @@ body {
 }
 
 .link-card {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 12px;
-  min-width: 0;
+  gap: 2px 12px;
   border: 1px solid var(--line);
   border-radius: 9px;
   background: rgba(0, 0, 0, 0.6);
   padding: 12px 14px;
 }
 
-.link-card > * {
-  min-width: 0;
+.link-card:hover {
+  border-color: #3a3a3a;
 }
 
 .link-short {
-  flex-shrink: 0;
-  max-width: 45%;
+  grid-column: 1;
+  grid-row: 1;
   font-size: 0.85rem;
   color: var(--lime);
   text-decoration: none;
-  word-break: break-all;
+  overflow-wrap: anywhere;
 }
 
 .link-short:hover {
@@ -216,23 +216,26 @@ body {
   text-underline-offset: 3px;
 }
 
-.link-url {
-  flex: 1 1 auto;
-  font-size: 0.78rem;
-  color: var(--muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .link-clicks {
-  flex-shrink: 0;
+  grid-column: 2;
+  grid-row: 1;
+  align-self: center;
   padding: 2px 8px;
   border: 1px solid var(--line);
   border-radius: 999px;
   font-size: 0.7rem;
   color: var(--muted);
   white-space: nowrap;
+}
+
+.link-url {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  font-size: 0.78rem;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .list-empty {
@@ -252,22 +255,11 @@ body {
   }
 
   .link-card {
-    flex-wrap: wrap;
-    gap: 6px 10px;
+    padding: 11px 12px;
   }
 
   .link-short {
-    flex-basis: 100%;
-    max-width: 100%;
-    font-size: 0.82rem;
-  }
-
-  .link-url {
-    flex-basis: calc(100% - 76px);
-  }
-
-  .link-clicks {
-    margin-left: auto;
+    font-size: 0.8rem;
   }
 }
 
