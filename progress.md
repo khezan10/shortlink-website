@@ -118,6 +118,13 @@
 > **Next:** ...
 > ```
 
+### [E3/E6] Domain ganda + animasi ala Zanara — DONE — 2026-10-20 18:20
+**Dikerjakan:** `shortUrl` kini mengikuti host request sehingga `link.mzg.my.id` dan `shortlink-website-psi.vercel.app` sama-sama sah; menambah boot loader (persen + kata berganti), entrance huruf blur→naik, sub typewriter, glitch eyebrow, dan stagger kartu.
+**Temuan:** `shortUrl` sebelumnya hanya dari `NEXT_PUBLIC_BASE_URL` sehingga domain Vercel menampilkan shortlink domain lain; loader sempat tertahan di 50% saat tab tidak aktif karena `requestAnimationFrame` diperlambat.
+**Bukti:** `GET /api/links` di kedua host mengembalikan shortUrl sesuai host masing-masing; `POST` via host Vercel → `https://shortlink-website-psi.vercel.app/TzGjRV2`; redirect `302` di kedua host; boot hilang 1,66 detik di tab aktif; 10 span huruf, 2 section `reveal.in`, sub berganti kalimat.
+**Keputusan:** hard-stop loader 2,4 detik agar tab latar tidak menggantung; animasi tanpa gerbang `prefers-reduced-motion` (mesin user melaporkan `reduce`).
+**Next:** E4 (uji checker link mati) dan E5/E7 (SECURITY.md, dependabot, ui-test).
+
 ### [E3/E9] Domain kustom, reset data, retensi 7 hari — DONE — 2026-10-20 17:40
 **Dikerjakan:** memakai domain `link.mzg.my.id` (Cloudflare → Vercel), mengosongkan seluruh data link, mengunci index unik `url`, dan menambah penghapusan otomatis link tanpa klik 7 hari.
 **Temuan:** domain sudah terpasang di project Vercel dan langsung 200; setelah reset, index `url_1` berhasil dibuat unik sehingga duplikat ditolak di level database, bukan hanya di handler.
