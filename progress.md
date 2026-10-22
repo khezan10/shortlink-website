@@ -101,7 +101,7 @@
 |------|-----|---------------|
 | Repo shortlink | https://github.com/khezan10/shortlink-website | ya |
 | Deploy Vercel (`*.vercel.app`) | https://shortlink-website-psi.vercel.app | ya (HTTP 200) |
-| Domain produksi | — (belum ada domain kustom) | — |
+| Domain produksi | https://link.mzg.my.id | ya (HTTP 200, health ok) |
 | Landing Zanara | https://zanara-project.vercel.app | ya |
 
 ---
@@ -117,6 +117,13 @@
 > **Keputusan:** ...
 > **Next:** ...
 > ```
+
+### [E3/E9] Domain kustom, reset data, retensi 7 hari — DONE — 2026-10-20 17:40
+**Dikerjakan:** memakai domain `link.mzg.my.id` (Cloudflare → Vercel), mengosongkan seluruh data link, mengunci index unik `url`, dan menambah penghapusan otomatis link tanpa klik 7 hari.
+**Temuan:** domain sudah terpasang di project Vercel dan langsung 200; setelah reset, index `url_1` berhasil dibuat unik sehingga duplikat ditolak di level database, bukan hanya di handler.
+**Bukti:** `before links: 2 → deleted 2`, `indexes: url_1:unique, code_1:unique`; `POST /api/links` → 201 `https://link.mzg.my.id/F3j5gwO`; POST ulang → 409 `DUPLICATE_URL`; `GET /{code}` → 302 + klik bertambah; cron tanpa token 401; cron dengan token → `{"checked":0,...,"purged":1}` untuk dokumen uji berumur 8 hari.
+**Keputusan:** `INACTIVE_PURGE_DAYS=7` (env, default 7) — link tanpa klik selama 7 hari dihapus saat cron harian 03:00; link mati tetap dihapus lewat `DEAD_LINK_STRIKES`.
+**Next:** E4 (uji checker link mati) dan E5/E7 (SECURITY.md, dependabot, ui-test).
 
 ### [E3] Shortlink fungsional + restyle daftar link — DONE — 2026-10-20 16:55
 **Dikerjakan:** mengganti `MONGODB_URI` Vercel dengan kredensial Atlas yang valid, menambah CSS daftar "link terbaru" yang sebelumnya belum ada, dan mengatur jarak hero → daftar.
@@ -149,7 +156,7 @@
 | F-04 | P1 | E3 | URL tujuan yang sama bisa dibuat berulang dengan kode berbeda | tidak ada index unik `url`; `findOne({url})` tidak ada | FIXED | 3c62584 |
 | F-05 | P0 | E3/E9 | Atlas menolak koneksi dari Vercel (Network Access) + `MONGODB_URI` memakai password lama | health `ECONNREFUSED`, lalu `AUTH_FAILED` setelah allowlist | FIXED | env Vercel + 9809a66 |
 | F-06 | P2 | E2 | Health 500 tanpa alasan yang bisa didiagnosis | respons lama hanya `{ok:false}` | FIXED | ac9e659 |
-| F-07 | P2 | E9 | `mzg.my.id` sudah dipakai Zanara; shortlink belum punya domain kustom | curl `https://mzg.my.id` → title "Zanara Project" | BLOCKED | — |
+| F-07 | P2 | E9 | Shortlink belum punya domain kustom (apex dipakai Zanara) | curl `https://mzg.my.id` → title "Zanara Project" | FIXED | `link.mzg.my.id` (318fa47) |
 | F-08 | P1 | E5/E6/E7 | `SECURITY.md`, `dependabot.yml`, `ui-test.yml`/Lighthouse belum ada | `ls` → tidak ditemukan | TODO | — |
 
 ### 8.2 Tabel Checklist
