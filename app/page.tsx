@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 type Result =
   | { ok: true; code: string; shortUrl: string; url: string }
@@ -13,6 +13,8 @@ const ERROR_ID: Record<string, string> = {
   TARGET_UNREACHABLE: "Link tujuan tidak bisa diakses, periksa lagi.",
   CHECK_INCONCLUSIVE: "Pengecekan belum meyakinkan, coba lagi sebentar.",
   RATE_LIMITED: "Kebanyakan membuat link. Coba lagi nanti.",
+  DUPLICATE_URL: "Link tujuan ini sudah pernah dibuat. Shortlink yang ada ditampilkan di bawah.",
+  DB_UNAVAILABLE: "Database belum siap. Coba lagi sebentar.",
 };
 
 export default function Home() {
@@ -22,6 +24,20 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
   const [copied, setCopied] = useState(false);
+  const [links, setLinks] = useState<Array<{code: string; shortUrl: string; url: string; clicks: number; createdAt: Date}>>([]);
+  useEffect(() => {
+    async function loadLinks() {
+      try {
+        const res = await fetch("/api/links?limit=50");
+        if (!res.ok) throw new Error("failed");
+        const data = await res.json();
+        setLinks(data.links || []);
+      } catch {
+        setLinks([]);
+      }
+    }
+    loadLinks();
+  }, []);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -37,6 +53,17 @@ export default function Home() {
       const data = await res.json();
       if (res.ok) {
         setResult({ ok: true, ...data });
+        // refresh daftar link supaya tampilkan link baru
+        (async () => {
+          try {
+            const r = await fetch("/api/links?limit=50");
+            if (!r.ok) throw new Error("failed");
+            const dat = await r.json();
+            setLinks(dat.links || []);
+          } catch {
+            // abaikan gagal refresh
+          }
+        })();
       } else {
         setResult({ ok: false, error: data.error || "INVALID_URL" });
       }
@@ -130,6 +157,28 @@ export default function Home() {
           {ERROR_ID[result.error] || "Terjadi kesalahan, coba lagi."}
         </p>
       )}
+
+      {/* Daftar link terbaru di bawah hero */}
+      <section className="links-list" aria-label="Daftar link terbaru">
+        <h2 className="list-title">link terbaru</h2>
+        {links.length > 0 ? (
+          <ul className="link-grid">
+            {links.map((l) => (
+              <li key={l.code} className="link-card">
+                <a className="link-short" href={l.shortUrl} target="_blank" rel="noopener noreferrer">
+                  {l.shortUrl.replace(/^https?:\/\//, "")}
+                </a>
+                <span className="link-url" title={l.url}>
+                  {l.url.length > 60 ? l.url.slice(0, 57) + "..." : l.url}
+                </span>
+                <span className="link-clicks">{l.clicks} klik</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="list-empty">belum ada link yang dibuat_</p>
+        )}
+      </section>
     </main>
   );
 }

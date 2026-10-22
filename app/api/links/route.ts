@@ -7,6 +7,39 @@ import { checkRateLimit, clientIp } from "@/lib/ratelimit";
 import { siteConfig } from "@/lib/config";
 import type { LinkDoc } from "@/lib/types";
 
+function shortUrlFor(code: string): string {
+  return `${siteConfig.baseUrl.replace(/\/$/, "")}/${code}`;
+}
+
+/** GET /api/links — daftar link terbaru (untuk daftar di bawah hero). */
+export async function GET(req: NextRequest) {
+  const q = req.nextUrl.searchParams.get("limit");
+  const limit = Math.min(Math.max(parseInt(q || "50", 10) || 50, 1), 200);
+  try {
+    const db = await getDb();
+    const docs = await db
+      .collection<LinkDoc>("links")
+      .find({}, { projection: { _id: 0, code: 1, url: 1, clicks: 1, createdAt: 1 } })
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .toArray();
+    return NextResponse.json(
+      {
+        links: docs.map((d) => ({
+          code: d.code,
+          shortUrl: shortUrlFor(d.code),
+          url: d.url,
+          clicks: d.clicks ?? 0,
+          createdAt: d.createdAt,
+        })),
+      },
+      { headers: { "Cache-Control": "no-store" } }
+    );
+  } catch {
+    return NextResponse.json({ links: [], error: "DB_UNAVAILABLE" }, { status: 503 });
+  }
+}
+
 export async function POST(req: NextRequest) {
   // 1) Rate limit per IP.
   const ip = clientIp(req);
@@ -63,9 +96,23 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "CHECK_INCONCLUSIVE" }, { status: 503 });
   }
 
-  // 5) Simpan (retry bila kode acak bentrok; alias bentrok → 409).
+  // 5) Tolak duplikat URL tujuan — kembalikan shortlink yang sudah ada.
   const db = await getDb();
   const col = db.collection<LinkDoc>("links");
+  const existing = await col.findOne({ url }, { projection: { code: 1 } });
+  if (existing) {
+    return NextResponse.json(
+      {
+        error: "DUPLICATE_URL",
+        code: existing.code,
+        shortUrl: shortUrlFor(existing.code),
+        url,
+      },
+      { status: 409 }
+    );
+  }
+
+  // 6) Simpan (retry bila kode acak bentrok; alias bentrok → 409).
   const now = new Date();
   for (let attempt = 0; attempt < 5; attempt++) {
     try {
@@ -80,11 +127,22 @@ export async function POST(req: NextRequest) {
       const shortUrl = `${siteConfig.baseUrl.replace(/\/$/, "")}/${code}`;
       return NextResponse.json({ code, shortUrl, url }, { status: 201 });
     } catch (e: unknown) {
-      const err = e as { code?: number };
+      const err = e as { code?: number; keyPattern?: Record<string, unknown> };
       if (err?.code === 11000) {
-        if (body.alias) {
-          return NextResponse.json({ error: "ALIAS_TAKEN" }, { status: 409 });
+        // Cek apakah duplikat terjadi pada url atau code
+        const keyPattern: Record<string, unknown> = err.keyPattern || {};
+        if (keyPattern && (keyPattern as { url?: unknown }).url) {
+          // Duplikat URL — kembalikan shortlink yang sudah ada
+          const col2 = (await getDb()).collection<LinkDoc>("links");
+          const dup = await col2.findOne({ url }, { projection: { code: 1 } });
+          if (dup) {
+            return NextResponse.json(
+              { error: "DUPLICATE_URL", code: dup.code, shortUrl: shortUrlFor(dup.code), url },
+              { status: 409 }
+            );
+          }
         }
+        if (body.alias) return NextResponse.json({ error: "ALIAS_TAKEN" }, { status: 409 });
         code = generateCode(); // coba kode baru
         continue;
       }
