@@ -6,7 +6,10 @@ export async function GET() {
     const db = await getDb();
     await db.command({ ping: 1 });
     return NextResponse.json({ ok: true });
-  } catch {
-    return NextResponse.json({ ok: false }, { status: 500 });
+  } catch (e) {
+    const err = e as Error;
+    // Log ke Vercel (tidak memuat URI/password), balas nama error saja.
+    console.error("[health] db error:", err.name, "-", err.message);
+    return NextResponse.json({ ok: false, reason: err.name }, { status: 500 });
   }
 }
