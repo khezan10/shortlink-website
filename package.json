@@ -13,9 +13,9 @@
     "check": "npm run lint && npm run typecheck && npm test && npm run build"
   },
   "dependencies": {
-    "mongodb": "^7.7.0",
+    "mongodb": "^7.8.0",
     "nanoid": "^6.0.2",
-    "next": "16.4.3",
+    "next": "16.4.5",
     "react": "19.3.1",
     "react-dom": "19.3.1"
   },
@@ -34,7 +34,7 @@
     "tsx": "^4",
     "typescript": "^5",
     "typescript-eslint": "^8.72.1",
-    "vitest": "^5.0.5"
+    "vitest": "^5.1.0"
   },
   "license": "MIT",
   "author": "Khezan Amartya",
